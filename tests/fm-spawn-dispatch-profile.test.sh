@@ -385,6 +385,37 @@ test_active_dispatch_profile_allows_raw_launch_command() {
   pass "active crew-dispatch profile allows the raw launch-command escape hatch"
 }
 
+test_configured_raw_launch_command() {
+  local rec id out launch kind command
+  command=$'FM_WRAPPER_MODE=banana custom-agent\t--flag  "two words"'
+  for kind in ship scout; do
+    id="configured-raw-$kind"
+    rec=$(make_spawn_case "$id" "$command" "$id")
+    read_case_record "$rec"
+    if [ "$kind" = scout ]; then
+      out=$(run_spawn "$HOME_DIR" "$WT_DIR" "$FAKEBIN_DIR" "$LAUNCH_LOG" \
+        "$id" "$PROJ_DIR" --scout)
+    else
+      out=$(run_ship_spawn "$HOME_DIR" "$WT_DIR" "$FAKEBIN_DIR" "$LAUNCH_LOG" \
+        "$id" "$PROJ_DIR")
+    fi
+    expect_code 0 "$?" "configured raw command should launch an ordinary $kind"
+    assert_contains "$out" "spawned $id harness=custom-agent" "configured raw harness missing"
+    launch=$(cat "$LAUNCH_LOG")
+    [ "$launch" = "$command" ] || fail "configured raw $kind command changed"$'\n'"actual: $launch"
+  done
+  id=configured-bare-codex
+  rec=$(make_spawn_case "$id" codex "$id")
+  read_case_record "$rec"
+  out=$(run_ship_spawn "$HOME_DIR" "$WT_DIR" "$FAKEBIN_DIR" "$LAUNCH_LOG" \
+    "$id" "$PROJ_DIR")
+  expect_code 0 "$?" "configured bare codex should keep the adapter launch"
+  assert_meta_profile "$HOME_DIR/state/$id.meta" codex default default
+  assert_contains "$(cat "$LAUNCH_LOG")" "codex --dangerously-bypass-approvals-and-sandbox" \
+    "configured bare codex lost its adapter template"
+  pass "configured raw command launches unmodified for ordinary ships and scouts"
+}
+
 test_claude_threads_model_and_effort() {
   local rec id out status launch
   id=profile-claude-z2
@@ -1382,6 +1413,7 @@ test_active_dispatch_profile_requires_explicit_harness_for_scout
 test_active_dispatch_profile_allows_explicit_harness
 test_active_dispatch_profile_allows_positional_harness
 test_active_dispatch_profile_allows_raw_launch_command
+test_configured_raw_launch_command
 test_claude_threads_model_and_effort
 test_codex_threads_model_and_effort
 test_codex_threads_model_and_max_effort

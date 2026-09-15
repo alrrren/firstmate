@@ -42,8 +42,8 @@
 # config/secondmate-harness format: a single line "<harness> [<model>] [<effort>]",
 # whitespace-separated. A bare "<harness>" (today's format) behaves exactly as before:
 # harness only, no model/effort. Only the first non-empty, non-comment line is parsed.
-# Model/effort come ONLY from this file - config/crew-harness stays a bare adapter
-# name and is never parsed for a model.
+# Model/effort come ONLY from this file - config/crew-harness accepts an adapter
+# name or raw launch command and is never parsed for a model.
 # Detection evidence and precedence:
 #   Markers  - verified environment variables a harness publishes about itself.
 #              Cheap and unambiguous about WHICH harness set them, but they are
@@ -412,11 +412,13 @@ detect_own() {
   if [ "$strength" = comm ]; then echo "$harness"; else echo "$marker"; fi
 }
 
-# Resolve the effective crewmate harness: config/crew-harness (a bare adapter
-# name) wins; absent or "default" mirrors firstmate's own harness.
+# Resolve the effective crewmate harness: config/crew-harness (an adapter
+# name or raw launch command) wins; absent or "default" mirrors firstmate's own harness.
 resolve_crew() {
   local crew=
-  [ -f "$CONFIG/crew-harness" ] && crew=$(tr -d '[:space:]' < "$CONFIG/crew-harness" || true)
+  [ -f "$CONFIG/crew-harness" ] && crew=$(cat "$CONFIG/crew-harness" || true)
+  crew="${crew#"${crew%%[![:space:]]*}"}"
+  crew="${crew%"${crew##*[![:space:]]}"}"
   if [ -z "$crew" ] || [ "$crew" = "default" ]; then detect_own; else echo "$crew"; fi
 }
 
