@@ -17,6 +17,7 @@ type LockOwnership = "owned" | "missing" | "other";
 const extensionFile = fileURLToPath(import.meta.url);
 const extensionDir = dirname(extensionFile);
 const root = resolve(extensionDir, "../..");
+const fmRoot = process.env.FM_ROOT_OVERRIDE || root;
 const fmHome = process.env.FM_HOME || process.env.FM_ROOT_OVERRIDE || root;
 const state = process.env.FM_STATE_OVERRIDE || `${fmHome}/state`;
 const marker = `${state}/.pi-turnend-extension-loaded`;
@@ -448,7 +449,7 @@ async function claimSessionstartMessage(
 
 function runGuard(): Promise<{ code: number; stderr: string }> {
   return new Promise((resolveResult) => {
-    const invocation = firstmateShellInvocation(`${root}/bin/fm-turnend-guard.sh`, []);
+    const invocation = firstmateShellInvocation(`${fmRoot}/bin/fm-turnend-guard.sh`, []);
     let child: ChildProcess;
     try {
       child = spawn(invocation.command, invocation.args, {

@@ -1787,6 +1787,17 @@ The current portable regression proves that only consecutive provider errors cou
 `tests/fm-pi-watch-extension.test.sh` owns the provider-free integration evidence that watcher fallback remains pending until Pi accepts the main follow-up or the branch settles successfully, and that a follow-up accepted while main is streaming neither stalls the successor chain nor escapes replacement replay until Pi consumes it.
 [`pi-supervision-branch.md`](../pi-supervision-branch.md) owns the current cooldown, recovery, and re-latch contract and points to the regression that now covers it.
 
+The effective-code-root regression was verified on 2026-09-16 with Node 26.8.2 on macOS, using the tracked Pi extensions and real watcher and guard processes without a model request.
+It loads the extensions from one checkout and arms through a separate `FM_ROOT_OVERRIDE`, proves that the turn-end guard accepts the live cycle, and proves that stopping the watcher still produces a blind-turn warning.
+
+```sh
+bin/fm-test-run.sh tests/fm-pi-watch-extension.test.sh
+```
+
+```text
+ok - Pi guard recognizes the real watcher armed from FM_ROOT_OVERRIDE
+```
+
 Scope of the earlier evidence: the installed signed `pi` CLI (0.82.0 at verification time) is a compiled binary whose bundled SDK is not importable from Node, so the importable npm package is the only surface the guard and the typecheck can pin.
 The extension executes inside the signed CLI's own runtime, so a CLI upgrade can drift ahead of the pinned npm surface; refresh the SDK construction, picker, renderer, and type evidence after every Pi upgrade by rerunning the applicable live guard probes, picker regression, and strict typecheck above (point `FM_PI_PACKAGE_DIR` at a matching npm install when one exists).
 The live guard now drives both extensions through the watcher-owned settlement handshake, requires rejected branch settlement before main delivery, and verifies successor-delivery confirmation; rerun it against the matching importable Pi package to refresh end-to-end fallback evidence.

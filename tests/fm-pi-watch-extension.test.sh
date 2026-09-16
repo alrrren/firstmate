@@ -74,7 +74,6 @@ export const Type = {
 JS
 }
 
-
 test_pi_guard_recognizes_watcher_from_effective_root() {
   local repo runtime home out status
   repo="$TMP_ROOT/pi-loaded-root"
@@ -134,6 +133,9 @@ try {
 } finally {
   for (const callback of handlers.get("session_shutdown")) await callback({ reason: "quit" });
 }
+for (const callback of handlers.get("agent_settled")) await callback();
+assert.equal(messages.length, 1, "Pi guard must still reject a stopped watcher");
+assert.match(messages[0], /TURN WOULD END BLIND/);
 EOF
 )
   status=$?
