@@ -74,6 +74,76 @@ export const Type = {
 JS
 }
 
+test_pi_guard_recognizes_watcher_from_effective_root() {
+  local repo runtime home out status
+  repo="$TMP_ROOT/pi-loaded-root"
+  runtime="$TMP_ROOT/pi-effective-root"
+  home="$TMP_ROOT/pi-effective-home"
+  mkdir -p "$runtime" "$home/state" "$home/config"
+  install_pi_watch_extension_fixture "$repo"
+  cp "$ROOT/.pi/extensions/fm-primary-turnend-guard.ts" "$repo/.pi/extensions/"
+  cp -R "$ROOT/bin" "$runtime/bin"
+  cp -R "$ROOT/bin/." "$repo/bin/"
+  git init -q "$runtime"
+  : > "$runtime/AGENTS.md"
+  out=$(PLUGIN="$repo/.pi/extensions/fm-primary-pi-watch.ts" \
+    GUARD_PLUGIN="$repo/.pi/extensions/fm-primary-turnend-guard.ts" \
+    FM_HOME="$home" FM_ROOT_OVERRIDE="$runtime" FM_STATE_OVERRIDE="$home/state" \
+    FM_CONFIG_OVERRIDE="$home/config" FM_POLL=1 FM_HEARTBEAT=999999 \
+    FM_CHECK_INTERVAL=999999 FM_HOME_SUMMARY_INTERVAL=999999 \
+    node --input-type=module 2>&1 <<'EOF'
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
+
+const handlers = new Map();
+const messages = [];
+let arm;
+const pi = {
+  on(name, handler) {
+    const callbacks = handlers.get(name) ?? [];
+    callbacks.push(handler);
+    handlers.set(name, callbacks);
+  },
+  registerCommand() {},
+  registerTool(tool) { arm = tool; },
+  sendUserMessage: async (message) => { messages.push(message); },
+};
+const state = `${process.env.FM_HOME}/state`;
+writeFileSync(`${state}/.lock`, `${process.pid}\n`);
+(await import(pathToFileURL(process.env.PLUGIN).href)).default(pi);
+(await import(pathToFileURL(process.env.GUARD_PLUGIN).href)).default(pi);
+try {
+  assert.equal((await arm.execute()).details.ok, true);
+  const guard = () => spawnSync(`${process.env.FM_ROOT_OVERRIDE}/bin/fm-turnend-guard.sh`, [], {
+    input: '{"stop_hook_active":false}', encoding: "utf8",
+  });
+  for (let i = 0; i < 200 && !existsSync(`${state}/.last-watcher-beat`); i += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  assert.ok(existsSync(`${state}/.last-watcher-beat`), "real watcher never established its beacon");
+  assert.equal(readFileSync(`${state}/.watch.lock/watcher-path`, "utf8").trim(),
+    `${process.env.FM_ROOT_OVERRIDE}/bin/fm-watch.sh`);
+  writeFileSync(`${state}/task.meta`, "");
+  const direct = guard();
+  assert.equal(direct.status, 0, direct.stderr);
+  for (const callback of handlers.get("agent_settled")) await callback();
+  assert.deepEqual(messages, [], "Pi guard rejected the healthy cycle from the effective code root");
+} finally {
+  for (const callback of handlers.get("session_shutdown")) await callback({ reason: "quit" });
+}
+for (const callback of handlers.get("agent_settled")) await callback();
+assert.equal(messages.length, 1, "Pi guard must still reject a stopped watcher");
+assert.match(messages[0], /TURN WOULD END BLIND/);
+EOF
+)
+  status=$?
+  [ "$status" -eq 0 ] || fail "Pi guard must recognize the real watcher armed from FM_ROOT_OVERRIDE: $out"
+  [ -z "$out" ] || fail "Pi effective-root watcher check printed output: $out"
+  pass "Pi guard recognizes the real watcher armed from FM_ROOT_OVERRIDE"
+}
+
 test_pi_extension_reports_external_healthy_watcher() {
   local repo home plugin out status
   repo="$TMP_ROOT/pi-external-healthy-root"
@@ -3974,6 +4044,7 @@ EOF
   pass "OpenCode healthy arm output does not suppress the turn-end guard"
 }
 
+test_pi_guard_recognizes_watcher_from_effective_root
 test_pi_extension_reports_external_healthy_watcher
 test_pi_tool_returns_agent_tool_result
 test_pi_redundant_tool_call_is_owned_noop
