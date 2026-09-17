@@ -1,0 +1,7 @@
+$ bin/fm-test-run.sh --list --changed --base HEAD   (only .pi/extensions/fm-primary-turnend-guard.ts modified)
+tests/fm-sessionstart-instruction-refresh-live-e2e.test.sh
+tests/fm-pi-windows-shell-invocation.test.sh
+tests/fm-pi-watch-extension.test.sh
+
+with the new selection line deleted from bin/fm-test-run.sh:
+  fm-pi-watch-extension.test.sh occurrences in selection = 0

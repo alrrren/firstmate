@@ -1,0 +1,19 @@
+--- operator runs the Pi watch arm tool ---
+arm ok: true
+loaded-extension checkout : /Users/aleks/.no-mistakes/worktrees/0dab6b72e1a5/01M2PY32XK3BJ5637SAZKTJ140
+effective code root       : /private/var/folders/_r/_lb0bbc5531c49rv9826b6780000gn/T/fm-pi-watch-extension.P4Zs7N/evidence-effective-root
+live watcher process path : /private/var/folders/_r/_lb0bbc5531c49rv9826b6780000gn/T/fm-pi-watch-extension.P4Zs7N/evidence-effective-root/bin/fm-watch.sh
+
+--- turn ends with the real watcher alive ---
+no warning injected: turn allowed to end (supervision recognized)
+
+--- operator quits: watcher is torn down ---
+warning injected as expected:
+⁣FIRSTMATE_OP: v1 turn-end-guard: TURN WOULD END BLIND - supervision is off. The watcher cycle is missing, failed, or unhealthy. Follow the harness recovery instruction below before ending the turn.
+
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  TURN WOULD END BLIND - SUPERVISION IS OFF
+●  1 task(s) in flight, but no live watcher holds this home lock (last beat: 1s ago).
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+

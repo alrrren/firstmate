@@ -1,0 +1,41 @@
+$ bin/fm-test-run.sh tests/fm-pi-watch-extension.test.sh  (fix in place)
+FM_TEST_BEGIN 2026-09-17T05:52:55Z tests/fm-pi-watch-extension.test.sh family=watcher-wake-lock expected_gate_skip=none
+ok - Pi guard recognizes the real watcher armed from FM_ROOT_OVERRIDE
+ok - Pi extension reports external healthy watcher output
+ok - Pi guard recognizes the real watcher armed from FM_ROOT_OVERRIDE
+FM_TEST_END 2026-09-17T05:54:02Z tests/fm-pi-watch-extension.test.sh exit=0 duration_ms=66584 gate_skip=false
+FM_TEST_SUMMARY total=1 failed=0 skipped_gate=0 duration_ms=66685
+FM_TEST_SUMMARY_FAMILY family=watcher-wake-lock count=1 duration_ms=66584 failed=0
+FM_TEST_SLOWEST rank=1 script=tests/fm-pi-watch-extension.test.sh duration_ms=66584
+
+$ bash <focused runner>   (fmRoot reverted to root — pre-fix behavior)
+not ok - Pi guard must recognize the real watcher armed from FM_ROOT_OVERRIDE: node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Pi guard rejected the healthy cycle from the effective code root
++ actual - expected
+
++ [
++   '⁣FIRSTMATE_OP: v1 turn-end-guard: TURN WOULD END BLIND - supervision is off. The watcher cycle is missing, failed, or unhealthy. Follow the harness recovery instruction below before ending the turn.\n' +
++     '\n' +
++     '●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
++     '●  TURN WOULD END BLIND - SUPERVISION IS OFF\n' +
++     '●  1 task(s) in flight, but no live watcher holds this home lock (last beat: 1s ago).\n' +
++     '●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.\n' +
++     '●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
++ ]
+- []
+
+    at file:///Users/aleks/.no-mistakes/worktrees/0dab6b72e1a5/01M2PY32XK3BJ5637SAZKTJ140/[eval1]:38:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    '⁣FIRSTMATE_OP: v1 turn-end-guard: TURN WOULD END BLIND - supervision is off. The watcher cycle is missing, failed, or unhealthy. Follow the harness recovery instruction below before ending the turn.\n' +
+      '\n' +
+      '●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      '●  TURN WOULD END BLIND - SUPERVISION IS OFF\n' +
+      '●  1 task(s) in flight, but no live watcher holds this home lock (last beat: 1s ago).\n' +
+      '●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.\n' +
+      '●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
+  ],
