@@ -254,7 +254,7 @@ The blocking and bounded-follow-up mechanisms were validated across seven harnes
 
 ### Pi effective-code-root watcher liveness, 2026-09-16
 
-Verified on 2026-09-16 with Node 26.8.2 on macOS, using the tracked Pi extensions and real watcher and guard processes without a model request.
+Verified on 2026-09-16 on macOS with the `node` on the test runner's PATH, using the tracked Pi extensions and real watcher and guard processes without a model request.
 The regression loads both extensions from one checkout and arms through a separate `FM_ROOT_OVERRIDE`, proving that the turn-end guard extension runs `bin/fm-turnend-guard.sh` from the effective code root and so accepts the live cycle it armed, and that stopping that watcher still produces the blind-turn warning.
 
 ```sh
